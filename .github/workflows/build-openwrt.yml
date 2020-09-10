@@ -34,7 +34,7 @@ env:
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: .config
   CUSTOM_CONFIG: customize.sh
-  SSH_ACTIONS: true
+  SSH_ACTIONS: false
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
   TZ: Asia/Shanghai
@@ -106,11 +106,6 @@ jobs:
     - name: SSH connection to Actions
       uses: P3TERX/debugger-action@main
       if: env.SSH_ACTIONS == 'true' || contains(github.event.action, 'ssh')
-
-    - name: Backup config file
-      if: env.SSH_ACTIONS == 'true'
-      run: |
-        [ -e 'ConfigBackup' ] && [ -e 'openwrt/.config' ] && cp openwrt/.config ConfigBackup/.config_${{ env.FILE_DATE }}
         
     - name: Download package
       id: package
