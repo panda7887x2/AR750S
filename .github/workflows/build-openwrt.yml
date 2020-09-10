@@ -88,14 +88,6 @@ jobs:
         
     - name: Install feeds
       run: cd /workdir/openwrt && ./scripts/feeds install -a
-
-    - name: Fix compile issue
-      run: |
-        echo "Trying to fix upx issue here"
-        #cd /workdir/openwrt/staging_dir/host/bin
-        #ln -s /usr/bin/upx upx
-        #ln -s /usr/bin/upx-ucl upx-ucl
-        #ls -l upx*
                 
     - name: Load custom configuration
       run: |
