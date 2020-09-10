@@ -1,0 +1,227 @@
+diff --git a/target/linux/ramips/base-files/etc/board.d/01_leds b/target/linux/ramips/base-files/etc/board.d/01_leds
+index 37630cde66..f90ed13d12 100755
+--- a/target/linux/ramips/base-files/etc/board.d/01_leds
++++ b/target/linux/ramips/base-files/etc/board.d/01_leds
+@@ -205,6 +205,9 @@ hc5661a)
+ 	ucidef_set_led_netdev "internet" "internet" "$boardname:blue:internet" "eth0.2"
+ 	set_wifi_led "$boardname:blue:wlan2g"
+ 	;;
++hc5611)
++	ucidef_set_led_default "system" "system" "$boardname:green:system" "1"
++	;;
+ hc5761)
+ 	ucidef_set_led_default "system" "system" "$boardname:blue:system" "1"
+ 	ucidef_set_led_netdev "internet" "internet" "$boardname:blue:internet" "eth0.2"
+diff --git a/target/linux/ramips/base-files/etc/board.d/02_network b/target/linux/ramips/base-files/etc/board.d/02_network
+index 705532753d..5c2603c34f 100755
+--- a/target/linux/ramips/base-files/etc/board.d/02_network
++++ b/target/linux/ramips/base-files/etc/board.d/02_network
+@@ -126,6 +126,10 @@ ramips_setup_interfaces()
+ 		ucidef_add_switch "switch0" \
+ 			"0:lan" "1:lan" "2:lan" "3:lan" "4:wan" "6@eth0"
+ 		;;
++	hc5611)
++		ucidef_add_switch "switch0" \
++			"3:lan" "6@eth0"
++		;;
+ 	mir3g)
+ 		ucidef_add_switch "switch0" \
+ 			"2:lan:2" "3:lan:1" "1:wan" "6t@eth0"
+@@ -427,6 +431,7 @@ ramips_setup_macs()
+ 		;;
+ 	hc5*61|\
+ 	hc5661a|\
++	hc5611|\
+ 	hc5962)
+ 		lan_mac=`mtd_get_mac_ascii bdinfo "Vfac_mac "`
+ 		[ -n "$lan_mac" ] || lan_mac=$(cat /sys/class/net/eth0/address)
+diff --git a/target/linux/ramips/base-files/etc/diag.sh b/target/linux/ramips/base-files/etc/diag.sh
+index dadb1bb6f6..27e7c52f71 100644
+--- a/target/linux/ramips/base-files/etc/diag.sh
++++ b/target/linux/ramips/base-files/etc/diag.sh
+@@ -169,6 +169,9 @@ get_status_led() {
+ 	vonets,var11n-300)
+ 		status_led="$boardname:blue:system"
+ 		;;
++	hc5611)
++		status_led="$boardname:green:system"
++		;;
+ 	hc5962)
+ 		status_led="$boardname:white:status"
+ 		;;
+diff --git a/target/linux/ramips/base-files/lib/ramips.sh b/target/linux/ramips/base-files/lib/ramips.sh
+index 491320badf..489ca59324 100755
+--- a/target/linux/ramips/base-files/lib/ramips.sh
++++ b/target/linux/ramips/base-files/lib/ramips.sh
+@@ -223,6 +223,9 @@ ramips_board_detect() {
+ 	*"HC5661A")
+ 		name="hc5661a"
+ 		;;
++	*"HC5611")
++		name="hc5611"
++		;;
+ 	*"HC5761")
+ 		name="hc5761"
+ 		;;
+diff --git a/target/linux/ramips/base-files/lib/upgrade/platform.sh b/target/linux/ramips/base-files/lib/upgrade/platform.sh
+index dd7616034b..f545b6929b 100755
+--- a/target/linux/ramips/base-files/lib/upgrade/platform.sh
++++ b/target/linux/ramips/base-files/lib/upgrade/platform.sh
+@@ -67,6 +67,7 @@ platform_check_image() {
+ 	gl-mt300n-v2|\
+ 	hc5*61|\
+ 	hc5661a|\
++	hc5611|\
+ 	hg255d|\
+ 	hlk-rm04|\
+ 	hpm|\
+diff --git a/target/linux/ramips/dts/HC5611.dts b/target/linux/ramips/dts/HC5611.dts
+new file mode 100644
+index 0000000000..d8dc9e6ff0
+--- /dev/null
++++ b/target/linux/ramips/dts/HC5611.dts
+@@ -0,0 +1,126 @@
++/dts-v1/;
++
++#include "mt7628an.dtsi"
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/input/input.h>
++
++/ {
++	compatible = "hiwifi,hc5611", "mediatek,mt7628an-soc";
++	model = "HiWiFi HC5611";
++
++	chosen {
++		bootargs = "console=ttyS0,115200";
++	};
++
++	memory@0 {
++		device_type = "memory";
++		reg = <0x0 0x8000000>;
++	};
++
++	gpio-leds {
++		compatible = "gpio-leds";
++
++		system {
++			label = "hc5611:green:system";
++			gpios = <&gpio0 11 GPIO_ACTIVE_HIGH>;
++		};
++	};
++
++	gpio_export {
++		compatible = "gpio-export";
++		#size-cells = <0>;
++
++		power-led {
++			gpio-export,name = "power-led";
++			gpio-export,output = <1>;
++			gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
++		};
++	};
++
++	gpio-keys {
++		compatible = "gpio-keys-polled";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		poll-interval = <20>;
++
++		reset {
++			label = "reset";
++			gpios = <&gpio1 6 GPIO_ACTIVE_LOW>;
++			linux,code = <KEY_RESTART>;
++		};
++	};
++};
++
++&pinctrl {
++	state_default: pinctrl0 {
++		gpio {
++			ralink,group = "i2c", "refclk", "wled_an";
++			ralink,function = "gpio";
++		};
++	};
++};
++
++&spi0 {
++	status = "okay";
++
++	m25p80@0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "jedec,spi-nor";
++		reg = <0>;
++		linux,modalias = "m25p80", "w25q128";
++		spi-max-frequency = <10000000>;
++		m25p,chunked-io = <32>;
++
++		partition@0 {
++			label = "u-boot";
++			reg = <0x0 0x30000>;
++			read-only;
++		};
++
++		partition@30000 {
++			label = "hw_panic";
++			reg = <0x30000 0x10000>;
++			read-only;
++		};
++
++		factory: partition@40000 {
++			label = "factory";
++			reg = <0x40000 0x10000>;
++			read-only;
++		};
++
++		partition@50000 {
++			label = "firmware";
++			reg = <0x50000 0xf70000>;
++		};
++
++		partition@fc0000 {
++			label = "oem";
++			reg = <0xfc0000 0x20000>;
++			read-only;
++		};
++
++		bdinfo: partition@fe0000 {
++			label = "bdinfo";
++			reg = <0xfe0000 0x10000>;
++			read-only;
++		};
++
++		partition@ff0000 {
++			label = "backup";
++			reg = <0xff0000 0x10000>;
++			read-only;
++		};
++	};
++};
++
++&ethernet {
++	mtd-mac-address = <&factory 0x4>;
++	mediatek,portmap = "wllll";
++};
++
++&wmac {
++	status = "okay";
++};
+diff --git a/target/linux/ramips/image/mt76x8.mk b/target/linux/ramips/image/mt76x8.mk
+index f58a2208c1..1d33bb4767 100644
+--- a/target/linux/ramips/image/mt76x8.mk
++++ b/target/linux/ramips/image/mt76x8.mk
+@@ -41,6 +41,13 @@ define Device/hc5661a
+ endef
+ TARGET_DEVICES += hc5661a
+ 
++define Device/hc5611
++  DTS := HC5611
++  IMAGE_SIZE := $(ralink_default_fw_size_16M)
++  DEVICE_TITLE := HiWiFi HC5611
++endef
++TARGET_DEVICES += hc5611
++
+ define Device/LinkIt7688
+   DTS := LINKIT7688
+   IMAGE_SIZE := $(ralink_default_fw_size_32M)
