@@ -9,7 +9,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: Build OpenWrt
+name: Build OpenWrt AR750S NOR
 
 on:
   repository_dispatch:
@@ -28,11 +28,10 @@ on:
 #    types: started
 
 env:
-  REPO_OP: https://github.com/openwrt/openwrt.git
+  REPO_OP: https://github.com/Lienol/openwrt
   REPO_LEDE: https://github.com/coolsnowwolf/lede
-  REPO_BRANCH: v18.06.8
+  REPO_BRANCH: dev-19.07
   FEEDS_CONF: feeds.conf.default
-  PATCH_PATH: patch
   CONFIG_FILE: .config
   CUSTOM_CONFIG: customize.sh
   SSH_ACTIONS: false
@@ -61,7 +60,7 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
-
+        
     - name: Clone source code
       working-directory: /workdir
       run: |
@@ -71,49 +70,38 @@ jobs:
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
         ln -sf /workdir/lede $GITHUB_WORKSPACE/lede
         cd /workdir/openwrt/package
-        git clone https://github.com/fw876/helloworld helloworld
-        git clone https://github.com/V2RaySSR/openwrt-packages kenzo
-        git clone https://github.com/V2RaySSR/small small
-
-    - name: Load custom feeds
-      run: |
-        cd /workdir
-        sed -i '/src-git luci /d' openwrt/feeds.conf.default
-        echo 'src-git luci https://github.com/coolsnowwolf/luci' >> openwrt/feeds.conf.default
-
+        git clone https://github.com/fw876/helloworld
+        git clone https://github.com/pymumu/smartdns
+        git clone https://github.com/pymumu/luci-app-smartdns
+        sed -i 's/include \.\.\/\.\.\/luci\.mk/include \$\(TOPDIR\)\/feeds\/luci\/luci\.mk/g' luci-app-smartdns/Makefile
+        
     - name: Update feeds
-      run: cd /workdir/lede && ./scripts/feeds update -a && cp -r package/lean /workdir/openwrt/package/ && cd /workdir/openwrt && ./scripts/feeds update -a
+      run: |
+        cd /workdir/lede    && ./scripts/feeds clean && ./scripts/feeds update -a 
+        cd /workdir/openwrt && ./scripts/feeds clean && ./scripts/feeds update -a
+        cd /workdir/openwrt/package
+        cp -rp /workdir/lede/package/lean/microsocks ./lean/
+        cp -rp /workdir/lede/package/lean/redsocks2 ./lean/
+        cp -rp /workdir/lede/package/lean/dns2socks ./lean/
+        cp -rp /workdir/lede/package/lean/pdnsd-alt ./lean/
+        cp -rp /workdir/lede/package/lean/luci-app-cpufreq ./lean/
         
     - name: Install feeds
       run: cd /workdir/openwrt && ./scripts/feeds install -a
 
     - name: Fix compile issue
       run: |
-        cd /workdir/openwrt/staging_dir/host/bin
-        ln -s /usr/bin/upx upx
-        ln -s /usr/bin/upx-ucl upx-ucl
-        ls -l upx*
-        rm -rf /workdir/openwrt/feeds/packages/lang/golang
-        cp -r /workdir/lede/feeds/packages/lang/golang /workdir/openwrt/feeds/packages/lang/golang
-        
-    - name: Patch for HC5611 HiWiFiGo
-      run: |
-        cp $PATCH_PATH/01_leds /workdir/openwrt/target/linux/ramips/base-files/etc/board.d/01_leds
-        cp $PATCH_PATH/02_network /workdir/openwrt/target/linux/ramips/base-files/etc/board.d/02_network
-        cp $PATCH_PATH/ramips.sh /workdir/openwrt/target/linux/ramips/base-files/lib/ramips.sh
-        cp $PATCH_PATH/platform.sh /workdir/openwrt/target/linux/ramips/base-files/lib/upgrade/platform.sh
-        cp $PATCH_PATH/HC5611.dts /workdir/openwrt/target/linux/ramips/dts/HC5611.dts
-        cp $PATCH_PATH/mt76x8.mk /workdir/openwrt/target/linux/ramips/image/mt76x8.mk
+        echo "Trying to fix upx issue here"
+        #cd /workdir/openwrt/staging_dir/host/bin
+        #ln -s /usr/bin/upx upx
+        #ln -s /usr/bin/upx-ucl upx-ucl
+        #ls -l upx*
                 
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
-        chmod +x $CUSTOM_CONFIG
-        cd openwrt
-        $GITHUB_WORKSPACE/$CUSTOM_CONFIG
-        echo 'Force to enable WIFI'
-        sed -i 's/set wireless.radio\${devidx}.disabled=1/set wireless.radio\${devidx}.disabled=0/g' /workdir/openwrt/package/kernel/mac80211/files/lib/wifi/mac80211.sh
+        [ -e $CUSTOM_CONFIG ] && chmod +x $CUSTOM_CONFIG && cd openwrt && $GITHUB_WORKSPACE/$CUSTOM_CONFIG
         
     - name: SSH connection to Actions
       uses: P3TERX/debugger-action@main
@@ -127,7 +115,6 @@ jobs:
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
-
     - name: Compile the firmware
       id: compile
       run: |
@@ -138,7 +125,6 @@ jobs:
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "::set-env name=DEVICE_NAME::_$(cat DEVICE_NAME)"
         echo "::set-env name=FILE_DATE::_$(date +"%Y%m%d%H%M")"
-
     - name: Check space usage
       if: (!cancelled())
       run: df -hT
@@ -158,7 +144,6 @@ jobs:
         rm -rf packages
         echo "::set-env name=FIRMWARE::$PWD"
         echo "::set-output name=status::success"
-
     - name: Upload firmware directory
       uses: actions/upload-artifact@main
       if: steps.organize.outputs.status == 'success' && !cancelled()
