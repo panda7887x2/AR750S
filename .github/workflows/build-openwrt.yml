@@ -107,6 +107,11 @@ jobs:
       uses: P3TERX/debugger-action@main
       if: env.SSH_ACTIONS == 'true' || contains(github.event.action, 'ssh')
 
+    - name: Backup config file
+      if: env.SSH_ACTIONS == 'true'
+      run: |
+        [ -e 'ConfigBackup' ] && [ -e 'openwrt/.config' ] && cp openwrt/.config ConfigBackup/.config_${{ env.FILE_DATE }}
+        
     - name: Download package
       id: package
       run: |
@@ -115,6 +120,7 @@ jobs:
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
+        
     - name: Compile the firmware
       id: compile
       run: |
@@ -125,6 +131,7 @@ jobs:
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "::set-env name=DEVICE_NAME::_$(cat DEVICE_NAME)"
         echo "::set-env name=FILE_DATE::_$(date +"%Y%m%d%H%M")"
+        
     - name: Check space usage
       if: (!cancelled())
       run: df -hT
@@ -144,6 +151,7 @@ jobs:
         rm -rf packages
         echo "::set-env name=FIRMWARE::$PWD"
         echo "::set-output name=status::success"
+        
     - name: Upload firmware directory
       uses: actions/upload-artifact@main
       if: steps.organize.outputs.status == 'success' && !cancelled()
