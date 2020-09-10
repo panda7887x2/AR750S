@@ -66,25 +66,25 @@ jobs:
       run: |
         df -hT $PWD
         git clone $REPO_OP -b $REPO_BRANCH openwrt
-        git clone $REPO_LEDE -b master lede
+        #git clone $REPO_LEDE -b master lede
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
-        ln -sf /workdir/lede $GITHUB_WORKSPACE/lede
+        #ln -sf /workdir/lede $GITHUB_WORKSPACE/lede
         cd /workdir/openwrt/package
-        git clone https://github.com/fw876/helloworld
+        #git clone https://github.com/fw876/helloworld
         git clone https://github.com/pymumu/smartdns
         git clone https://github.com/pymumu/luci-app-smartdns
         sed -i 's/include \.\.\/\.\.\/luci\.mk/include \$\(TOPDIR\)\/feeds\/luci\/luci\.mk/g' luci-app-smartdns/Makefile
         
     - name: Update feeds
       run: |
-        cd /workdir/lede    && ./scripts/feeds clean && ./scripts/feeds update -a 
         cd /workdir/openwrt && ./scripts/feeds clean && ./scripts/feeds update -a
-        cd /workdir/openwrt/package
-        cp -rp /workdir/lede/package/lean/microsocks ./lean/
-        cp -rp /workdir/lede/package/lean/redsocks2 ./lean/
-        cp -rp /workdir/lede/package/lean/dns2socks ./lean/
-        cp -rp /workdir/lede/package/lean/pdnsd-alt ./lean/
-        cp -rp /workdir/lede/package/lean/luci-app-cpufreq ./lean/
+        #cd /workdir/lede    && ./scripts/feeds clean && ./scripts/feeds update -a 
+        #cd /workdir/openwrt/package
+        #cp -rp /workdir/lede/package/lean/microsocks ./lean/
+        #cp -rp /workdir/lede/package/lean/redsocks2 ./lean/
+        #cp -rp /workdir/lede/package/lean/dns2socks ./lean/
+        #cp -rp /workdir/lede/package/lean/pdnsd-alt ./lean/
+        #cp -rp /workdir/lede/package/lean/luci-app-cpufreq ./lean/
         
     - name: Install feeds
       run: cd /workdir/openwrt && ./scripts/feeds install -a
