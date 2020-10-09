@@ -30,7 +30,7 @@ on:
 env:
   REPO_OP: https://github.com/Lienol/openwrt
   REPO_LEDE: https://github.com/coolsnowwolf/lede
-  REPO_BRANCH: dev-19.07
+  REPO_BRANCH: 19.07
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: .config
   CUSTOM_CONFIG: customize.sh
