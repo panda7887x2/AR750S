@@ -109,6 +109,8 @@ jobs:
         find dl -size -1024c -exec rm -f {} \;
         
     - name: Compile the firmware
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       id: compile
       run: |
         cd openwrt
@@ -124,6 +126,8 @@ jobs:
       run: df -hT
 
     - name: Upload bin directory
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       uses: actions/upload-artifact@main
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
       with:
@@ -131,6 +135,8 @@ jobs:
         path: openwrt/bin
 
     - name: Organize files
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       id: organize
       if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
       run: |
@@ -140,6 +146,8 @@ jobs:
         echo "::set-output name=status::success"
         
     - name: Upload firmware directory
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       uses: actions/upload-artifact@main
       if: steps.organize.outputs.status == 'success' && !cancelled()
       with:
