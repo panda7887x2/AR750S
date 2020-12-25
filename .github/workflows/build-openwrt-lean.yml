@@ -68,6 +68,7 @@ jobs:
         df -hT $PWD
         git clone $REPO_OP -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+        cd /workdir/openwrt
         sed -i 's/#src-git helloworld/src-git helloworld/g' feeds.conf.default
         cd /workdir/openwrt/package
         git clone https://github.com/pymumu/smartdns
