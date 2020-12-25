@@ -9,7 +9,7 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 
-name: Build OpenWrt AR750S NOR
+name: OpenWrt AR750S NOR Lienol
 
 on:
   repository_dispatch:
