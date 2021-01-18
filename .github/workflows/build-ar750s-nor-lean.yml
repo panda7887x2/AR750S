@@ -20,7 +20,7 @@ on:
     branches:
       - main
     paths:
-      - '.config.lean'
+      - '.config.nor.lean'
 
 #  schedule:
 #    - cron: 0 8 * * 5
