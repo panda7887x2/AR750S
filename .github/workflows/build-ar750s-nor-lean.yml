@@ -32,7 +32,7 @@ env:
   REPO_LEDE: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: .config.lean
+  CONFIG_FILE: .config.nor.lean
   CUSTOM_CONFIG: customize.sh
   SSH_ACTIONS: false
   UPLOAD_BIN_DIR: false
