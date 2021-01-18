@@ -34,7 +34,7 @@ env:
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: .config.nor.lean
   CUSTOM_CONFIG: customize.sh
-  SSH_ACTIONS: false
+  #SSH_ACTIONS: false
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
@@ -88,9 +88,9 @@ jobs:
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         [ -e $CUSTOM_CONFIG ] && chmod +x $CUSTOM_CONFIG && cd openwrt && $GITHUB_WORKSPACE/$CUSTOM_CONFIG
         
-    - name: SSH connection to Actions
-      uses: P3TERX/debugger-action@main
-      if: env.SSH_ACTIONS == 'true' || contains(github.event.action, 'ssh')
+    #- name: SSH connection to Actions
+    #  uses: P3TERX/debugger-action@main
+    #  if: env.SSH_ACTIONS == 'true' || contains(github.event.action, 'ssh')
         
     - name: Download package
       id: package
