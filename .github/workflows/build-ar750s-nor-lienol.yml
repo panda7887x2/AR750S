@@ -20,7 +20,7 @@ on:
     branches:
       - main
     paths:
-      - '.config.lienol'
+      - '.config.nor.lienol'
 
 #  schedule:
 #    - cron: 0 8 * * 5
@@ -32,7 +32,7 @@ env:
   REPO_LEDE: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: 19.07
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: .config.lienol
+  CONFIG_FILE: .config.nor.lienol
   CUSTOM_CONFIG: customize.sh
   SSH_ACTIONS: false
   UPLOAD_BIN_DIR: false
