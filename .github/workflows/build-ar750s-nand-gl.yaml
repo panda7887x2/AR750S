@@ -34,7 +34,8 @@ env:
   FEEDS_CONF: feeds.conf.default
   PATCH_PATH: patch
   CONFIG_FILE: .config.nand.gl
-  CUSTOM_CONFIG: customize.sh
+  CUSTOM_FEEDS: scripts/customize-feeds.sh
+  CUSTOM_CONFIG: scripts/customize-config.sh
   #SSH_ACTIONS: false
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
@@ -83,46 +84,9 @@ jobs:
   
     - name: Load custom feeds
       run: |
-        cd /workdir
-        mkdir -p /workdir/openwrt/package/lean
-        # Add luci-app-ssr-plus
-        cd /workdir/openwrt/package/lean
-        git clone --depth=1 https://github.com/fw876/helloworld
-        cd /workdir/openwrt
-        cd /workdir/lede/package/lean
-        cp -rp shadowsocksr-libev /workdir/openwrt/package/lean/
-        cp -rp pdnsd-alt /workdir/openwrt/package/lean/
-        cp -rp microsocks /workdir/openwrt/package/lean/
-        cp -rp dns2socks /workdir/openwrt/package/lean/
-        cp -rp simple-obfs /workdir/openwrt/package/lean/
-        cp -rp v2ray-plugin /workdir/openwrt/package/lean/
-        cp -rp v2ray /workdir/openwrt/package/lean/
-        cp -rp xray /workdir/openwrt/package/lean/
-        cp -rp trojan /workdir/openwrt/package/lean/
-        cp -rp ipt2socks /workdir/openwrt/package/lean/
-        cp -rp redsocks2 /workdir/openwrt/package/lean/
-        cp -rp kcptun /workdir/openwrt/package/lean/
-        cd /workdir/openwrt
-        mv /workdir/openwrt/feeds/gli_pub/shadowsocks-libev /workdir/openwrt/feeds/gli_pub/shadowsocks-libev.bak
-        mv /workdir/openwrt/feeds/packages/net/shadowsocks-libev /workdir/openwrt/feeds/packages/net/shadowsocks-libev.bak
-        cp -r /workdir/lede/feeds/packages/net/shadowsocks-libev /workdir/openwrt/feeds/gli_pub/shadowsocks-libev
-        cp -r /workdir/lede/feeds/packages/net/shadowsocks-libev /workdir/openwrt/feeds/packages/net/shadowsocks-libev
-        cp -r /workdir/lede/feeds/packages/net/shadowsocks-libev /workdir/openwrt/package/lean/helloworld/
-        # Clone community packages to package/community
-        mkdir package/community
-        cd /workdir/openwrt/package/community
-        # Add Lienol's Packages
-        git clone --depth=1 https://github.com/Lienol/openwrt-package
-        # Add luci-app-passwall
-        git clone --depth=1 https://github.com/xiaorouji/openwrt-passwall
-        # Add gotop
-        svn co https://github.com/project-openwrt/openwrt/trunk/package/ctcgfw/gotop
-        # Add smartdns
-        svn co https://github.com/pymumu/smartdns/trunk/package/openwrt ../smartdns
-        svn co https://github.com/project-openwrt/openwrt/trunk/package/ntlf9t/luci-app-smartdns ../luci-app-smartdns
-        # Add adbyby
-        cp -r /workdir/lede/package/lean/adbyby ./
-        cp -r /workdir/lede/package/lean/luci-app-adbyby-plus ./
+        chmod +x $CUSTOM_FEEDS
+        cd openwrt
+        $GITHUB_WORKSPACE/$CUSTOM_FEEDS
         
     - name: Fix compile issue
       run: |
