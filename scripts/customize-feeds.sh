@@ -44,11 +44,11 @@ git clone --depth=1 https://github.com/Lienol/openwrt-package
 git clone --depth=1 https://github.com/xiaorouji/openwrt-passwall
 
 # Add gotop
-svn co https://github.com/project-openwrt/openwrt/trunk/package/ctcgfw/gotop
+#svn co https://github.com/project-openwrt/openwrt/trunk/package/ctcgfw/gotop
 
 # Add smartdns
-svn co https://github.com/pymumu/smartdns/trunk/package/openwrt ../smartdns
-svn co https://github.com/project-openwrt/openwrt/trunk/package/ntlf9t/luci-app-smartdns ../luci-app-smartdns
+#svn co https://github.com/pymumu/smartdns/trunk/package/openwrt ../smartdns
+#svn co https://github.com/project-openwrt/openwrt/trunk/package/ntlf9t/luci-app-smartdns ../luci-app-smartdns
 
 # Add adbyby
 cp -r /workdir/lede/package/lean/adbyby ./
