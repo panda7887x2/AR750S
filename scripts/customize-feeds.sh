@@ -30,8 +30,8 @@ then
 fi
 
 rm -rf /workdir/openwrt/feeds/packages/net/wget
-cp -rp /workdir/lede/package/lean/wget /workdir/openwrt/feeds/packages/net/wget
-cp -rp /workdir/lede/package/lean/wget /workdir/openwrt/package/lean/wget
+cp -rp /workdir/lede/feeds/packages/net/wget /workdir/openwrt/feeds/packages/net/wget
+#cp -rp /workdir/lede/package/lean/wget /workdir/openwrt/package/lean/wget
 
 # Clone community packages to package/community
 mkdir package/community
