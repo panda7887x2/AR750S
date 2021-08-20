@@ -38,7 +38,7 @@ env:
   CUSTOM_CONFIG: scripts/customize-config.sh
   #SSH_ACTIONS: false
   UPLOAD_BIN_DIR: true
-  UPLOAD_FIRMWARE: true
+  UPLOAD_FIRMWARE: false
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
   TZ: Asia/Shanghai
 
